@@ -30,10 +30,16 @@ import {
   SelectValue,
 } from "./ui/select";
 import { cn } from "@/lib/utils";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, BadgePercent, Info } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "./ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import {
+  Tooltip,
+  TooltipProvider,
+  TooltipContent,
+  TooltipTrigger,
+} from "./ui/tooltip";
 export const INCOME_TYPE = {
   BANK_TRANSACTION: 1,
   SALARY: 2,
@@ -76,18 +82,18 @@ const IncomeForm = (props: PropsWithChildren<{}>) => {
     <Dialog>
       <DialogTrigger asChild>{props.children}</DialogTrigger>
       <DialogContent className="max-w-screen flex h-screen flex-col p-0">
-        <DialogHeader className="p-6 shadow-2xl">
+        <DialogHeader className="p-6 shadow-xl">
           <DialogTitle>Income</DialogTitle>
           <DialogDescription>
             This actions will add an income to your timeline.
           </DialogDescription>
         </DialogHeader>
-        <div className="flex flex-col items-center px-4">
+        <div className="flex flex-col items-center overflow-auto px-4">
           <Form {...incomeForm}>
             <form
               id="income-form"
               onSubmit={incomeForm.handleSubmit(onSubmit)}
-              className="w-full space-y-8"
+              className="w-full space-y-4"
             >
               <FormField
                 control={incomeForm.control}
@@ -112,7 +118,40 @@ const IncomeForm = (props: PropsWithChildren<{}>) => {
                   <FormItem>
                     <FormLabel>* Fund Amount</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} />
+                      <div className="flex items-center gap-4">
+                        <Input type="number" {...field} />
+                        <TooltipProvider>
+                          <Tooltip>
+                            <div className="relative flex">
+                              <TooltipTrigger
+                                className="absolute right-0 top-0"
+                                type="button"
+                              >
+                                <Info />
+                              </TooltipTrigger>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                className="relative"
+                                onClick={() => {
+                                  const amount = incomeForm.getValues().amount;
+
+                                  if (amount) {
+                                    const fundAmount = amount * 0.1;
+                                    field.onChange(fundAmount);
+                                  }
+                                }}
+                              >
+                                <BadgePercent />
+                              </Button>
+                            </div>
+                            <TooltipContent>
+                              Calculate the fund amount based on the amount.
+                              will be 10% of the amount.
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
                     </FormControl>
                     <FormDescription>
                       The amount of money you want to use for your fund.
