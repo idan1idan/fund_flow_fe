@@ -1,6 +1,6 @@
 import { ThemeProvider } from "@/components/theme-provider";
 import { ModeToggle } from "./components/mode-toggle";
-import { Bell, Menu, Plus } from "lucide-react";
+import { Bell, Menu } from "lucide-react";
 import { Button } from "./components/ui/button";
 import { BadgeDollarSign, BadgePercent } from "lucide-react";
 import { IncomeForm } from "./components/incomeForm";
