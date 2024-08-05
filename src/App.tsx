@@ -1,8 +1,10 @@
 import { ThemeProvider } from "@/components/theme-provider";
 import { ModeToggle } from "./components/mode-toggle";
-import { Bell, Menu } from "lucide-react";
+import { Bell, Menu, Plus } from "lucide-react";
 import { Button } from "./components/ui/button";
+import { BadgeDollarSign, BadgePercent } from "lucide-react";
 import { IncomeForm } from "./components/incomeForm";
+import { FundingForm } from "./components/fundingForm";
 
 function App() {
   return (
@@ -17,9 +19,19 @@ function App() {
       </header>
       <ModeToggle />
       <main className="flex h-full w-full flex-col items-center justify-center">
-        <IncomeForm>
-          <Button>Open</Button>
-        </IncomeForm>
+        <div className="flex items-center justify-center gap-2">
+          <IncomeForm>
+            <Button className="gap-1" variant={"outline"}>
+              <BadgeDollarSign /> Add income
+            </Button>
+          </IncomeForm>
+          <FundingForm>
+            <Button className="gap-1" variant={"outline"}>
+              <BadgePercent />
+              Add funding
+            </Button>
+          </FundingForm>
+        </div>
       </main>
     </ThemeProvider>
   );

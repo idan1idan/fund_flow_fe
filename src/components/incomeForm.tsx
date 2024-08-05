@@ -40,7 +40,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "./ui/tooltip";
-export const INCOME_TYPE = {
+const INCOME_TYPE: Record<IncomeTypeKey, number> = {
   BANK_TRANSACTION: 1,
   SALARY: 2,
   CASH: 3,
@@ -49,8 +49,6 @@ export const INCOME_TYPE = {
   OTHER: 7,
   CHECK: 8,
 } as const;
-
-type INCOME_TYPE_KEYS = keyof typeof INCOME_TYPE;
 
 const INCOME_TYPE_KEYS = [
   "BANK_TRANSACTION",
@@ -61,6 +59,7 @@ const INCOME_TYPE_KEYS = [
   "OTHER",
   "CHECK",
 ] as const;
+type IncomeTypeKey = (typeof INCOME_TYPE_KEYS)[number];
 
 const incomeSchema = z.object({
   amount: z.number().min(1),
@@ -81,7 +80,7 @@ const IncomeForm = (props: PropsWithChildren<{}>) => {
   return (
     <Dialog>
       <DialogTrigger asChild>{props.children}</DialogTrigger>
-      <DialogContent className="max-w-screen flex h-screen flex-col p-0">
+      <DialogContent className="max-w-screen flex h-svh w-full flex-col p-0">
         <DialogHeader className="p-6 shadow-xl">
           <DialogTitle>Income</DialogTitle>
           <DialogDescription>
@@ -273,4 +272,4 @@ const IncomeForm = (props: PropsWithChildren<{}>) => {
   );
 };
 
-export { IncomeForm };
+export { IncomeForm, INCOME_TYPE, INCOME_TYPE_KEYS, type IncomeTypeKey };

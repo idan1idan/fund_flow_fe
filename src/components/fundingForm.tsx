@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
-import { Form, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { DialogHeader, DialogFooter } from "./ui/dialog";
 import {
   FormField,
@@ -29,6 +29,7 @@ import {
   FormControl,
   FormDescription,
   FormMessage,
+  Form,
 } from "./ui/form";
 import { Input } from "./ui/input";
 import { PropsWithChildren } from "react";
@@ -36,19 +37,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "./ui/button";
 import { Calendar } from "./ui/calendar";
-
-export const TRANSACTION_TYPE = {
-  BANK_TRANSACTION: 1,
-  CREDIT_CARD: 2,
-  CASH: 3,
-  BIT: 4,
-  PAYPAL: 5,
-  NEDARIM_PLUS: 6,
-  OTHER: 7,
-  CHECK: 8,
-} as const;
-
-export type TRANSACTION_TYPE_KEYS = keyof typeof TRANSACTION_TYPE;
 
 const TRANSACTION_TYPE_KEYS = [
   "BANK_TRANSACTION",
@@ -60,6 +48,19 @@ const TRANSACTION_TYPE_KEYS = [
   "OTHER",
   "CHECK",
 ] as const;
+
+type TransactionTypeKey = (typeof TRANSACTION_TYPE_KEYS)[number];
+
+const TRANSACTION_TYPE: Record<TransactionTypeKey, number> = {
+  BANK_TRANSACTION: 1,
+  CREDIT_CARD: 2,
+  CASH: 3,
+  BIT: 4,
+  PAYPAL: 5,
+  NEDARIM_PLUS: 6,
+  OTHER: 7,
+  CHECK: 8,
+};
 
 const fundingSchema = z.object({
   amount: z.number().min(1),
@@ -79,7 +80,7 @@ const FundingForm = (props: PropsWithChildren<{}>) => {
   return (
     <Dialog>
       <DialogTrigger asChild>{props.children}</DialogTrigger>
-      <DialogContent className="max-w-screen flex h-screen flex-col p-0">
+      <DialogContent className="max-w-screen flex h-svh w-full flex-col p-0">
         <DialogHeader className="p-6 shadow-xl">
           <DialogTitle>Funding</DialogTitle>
           <DialogDescription>
@@ -222,4 +223,4 @@ const FundingForm = (props: PropsWithChildren<{}>) => {
   );
 };
 
-export { FundingForm };
+export { FundingForm, TRANSACTION_TYPE, TRANSACTION_TYPE_KEYS };
