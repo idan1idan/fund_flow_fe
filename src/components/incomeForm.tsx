@@ -101,7 +101,16 @@ const IncomeForm = (props: PropsWithChildren<{}>) => {
                   <FormItem>
                     <FormLabel>* Amount</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} />
+                      <Input
+                        type="number"
+                        {...field}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          Number.isNaN(value)
+                            ? field.onChange(0)
+                            : field.onChange(parseFloat(value));
+                        }}
+                      />
                     </FormControl>
                     <FormDescription>
                       The amount of money you received.
