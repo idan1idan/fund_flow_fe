@@ -11,10 +11,11 @@ import {
   FormMessage,
 } from "./ui/form";
 import { Input } from "./ui/input";
-import { PropsWithChildren } from "react";
+import { PropsWithChildren, useState } from "react";
 import { Button } from "./ui/button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -40,17 +41,29 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "./ui/tooltip";
-const INCOME_TYPE: Record<IncomeTypeKey, number> = {
-  BANK_TRANSACTION: 1,
-  SALARY: 2,
-  CASH: 3,
-  BIT: 4,
-  PAYPAL: 5,
-  OTHER: 7,
-  CHECK: 8,
+import { useCreateIncome } from "@/api/income";
+import { useToast } from "@/hooks/use-toast";
+enum INCOME_TYPE_ENUM {
+  "BANK_TRANSACTION" = 1,
+  "SALARY",
+  "CASH",
+  "BIT",
+  "PAYPAL",
+  "OTHER",
+  "CHECK",
+}
+const INCOME_TYPE: Record<IncomeTypeKey, INCOME_TYPE_ENUM> = {
+  BANK_TRANSACTION: INCOME_TYPE_ENUM.BANK_TRANSACTION,
+  SALARY: INCOME_TYPE_ENUM.SALARY,
+  CASH: INCOME_TYPE_ENUM.CASH,
+  BIT: INCOME_TYPE_ENUM.BIT,
+  PAYPAL: INCOME_TYPE_ENUM.PAYPAL,
+  OTHER: INCOME_TYPE_ENUM.OTHER,
+  CHECK: INCOME_TYPE_ENUM.CHECK,
 } as const;
+type IncomeTypeKey = keyof typeof INCOME_TYPE_ENUM;
 
-const INCOME_TYPE_KEYS = [
+const INCOME_TYPE_KEYS: IncomeTypeKey[] = [
   "BANK_TRANSACTION",
   "SALARY",
   "CASH",
@@ -59,26 +72,45 @@ const INCOME_TYPE_KEYS = [
   "OTHER",
   "CHECK",
 ] as const;
-type IncomeTypeKey = (typeof INCOME_TYPE_KEYS)[number];
 
 const incomeSchema = z.object({
-  amount: z.number().min(1),
-  fundAmount: z.number().min(1),
-  incomeType: z.enum(INCOME_TYPE_KEYS),
+  amount: z.string().regex(/^\d+(\.\d{1,2})?$/),
+  fundAmount: z.string().regex(/^\d+(\.\d{1,2})?$/),
+  incomeType: z.nativeEnum(INCOME_TYPE_ENUM),
   source: z.string().min(1),
   transactionDate: z.date(),
   description: z.string().optional(),
 });
 
 const IncomeForm = (props: PropsWithChildren<{}>) => {
+  const [open, setOpen] = useState<boolean>(false);
+
   const incomeForm = useForm<z.infer<typeof incomeSchema>>({
     resolver: zodResolver(incomeSchema),
   });
-  const onSubmit = (data: z.infer<typeof incomeSchema>) => {
-    console.log(data);
+  const { mutateAsync } = useCreateIncome();
+
+  const toast = useToast();
+  const onSubmit = async (data: z.infer<typeof incomeSchema>) => {
+    const newIncome = await mutateAsync(data);
+    if (newIncome) {
+      toast.toast({
+        title: "Success",
+        description: "Income added successfully",
+      });
+      setTimeout(() => {
+        setOpen(false);
+      }, 2000);
+    } else {
+      toast.toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Something went wrong",
+      });
+    }
   };
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{props.children}</DialogTrigger>
       <DialogContent className="max-w-screen flex h-svh w-full flex-col p-0">
         <DialogHeader className="p-6 shadow-xl">
@@ -103,12 +135,12 @@ const IncomeForm = (props: PropsWithChildren<{}>) => {
                     <FormControl>
                       <Input
                         type="number"
+                        inputMode="decimal"
+                        step={0.01}
                         {...field}
                         onChange={(e) => {
                           const value = e.target.value;
-                          Number.isNaN(value)
-                            ? field.onChange(0)
-                            : field.onChange(parseFloat(value));
+                          field.onChange(value.toString());
                         }}
                       />
                     </FormControl>
@@ -127,7 +159,16 @@ const IncomeForm = (props: PropsWithChildren<{}>) => {
                     <FormLabel>* Fund Amount</FormLabel>
                     <FormControl>
                       <div className="flex items-center gap-4">
-                        <Input type="number" {...field} />
+                        <Input
+                          type="number"
+                          inputMode="decimal"
+                          step={0.01}
+                          {...field}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            field.onChange(value.toString());
+                          }}
+                        />
                         <TooltipProvider>
                           <Tooltip>
                             <div className="relative flex">
@@ -145,7 +186,7 @@ const IncomeForm = (props: PropsWithChildren<{}>) => {
                                   const amount = incomeForm.getValues().amount;
 
                                   if (amount) {
-                                    const fundAmount = amount * 0.1;
+                                    const fundAmount = parseFloat(amount) * 0.1;
                                     field.onChange(fundAmount);
                                   }
                                 }}
@@ -175,8 +216,8 @@ const IncomeForm = (props: PropsWithChildren<{}>) => {
                   <FormItem>
                     <FormLabel>* Income type</FormLabel>
                     <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      onValueChange={(e) => field.onChange(parseInt(e))}
+                      defaultValue={""}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -185,7 +226,10 @@ const IncomeForm = (props: PropsWithChildren<{}>) => {
                       </FormControl>
                       <SelectContent>
                         {INCOME_TYPE_KEYS.map((key) => (
-                          <SelectItem key={key} value={key}>
+                          <SelectItem
+                            key={key}
+                            value={INCOME_TYPE_ENUM[key].toString()}
+                          >
                             {key}
                           </SelectItem>
                         ))}
@@ -281,4 +325,11 @@ const IncomeForm = (props: PropsWithChildren<{}>) => {
   );
 };
 
-export { IncomeForm, INCOME_TYPE, INCOME_TYPE_KEYS, type IncomeTypeKey };
+export {
+  IncomeForm,
+  INCOME_TYPE,
+  INCOME_TYPE_KEYS,
+  type IncomeTypeKey,
+  INCOME_TYPE_ENUM,
+  incomeSchema,
+};
